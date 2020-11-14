@@ -1,30 +1,22 @@
-import os
 from datetime import datetime
 
 import requests
 from requests import HTTPError
 
+from forecaster.config import PARAMS, URL
 
-def get_forecast():
-    token = os.getenv('TOKEN', None)
-    url = 'https://api.openweathermap.org/data/2.5/onecall'
-    params = {
-        'lat': '48.45',
-        'lon': '34.98',
-        'appid': token,
-        'exclude': 'minutely,hourly',
-        'units': 'metric'
-    }
-    responce = requests.get(url, params=params)
+
+def get_forecasts():
+    response = requests.get(URL, params=PARAMS)
     try:
-        responce.raise_for_status()
+        response.raise_for_status()
     except HTTPError as e:
         print(str(e))
-    return responce.json()
+    return response.json()
 
 
-def form_forecast():
-    forecast = get_forecast()
+def form_forecasts():
+    forecasts = get_forecasts()
 
     def _now(data):
 
@@ -37,8 +29,8 @@ def form_forecast():
         weather = str(data['current']['weather'][0]['description'])
 
         return {
-            'title': title,
-            'names': ['temperature', 'wind', 'weather'],
+            'date_title': title,
+            'titles': ['temperature', 'wind', 'weather'],
             'values': [temperature, wind, weather]
         }
 
@@ -55,13 +47,14 @@ def form_forecast():
         weather = str(data['daily'][i]['weather'][0]['description'])
 
         return {
-            'title': title,
-            'names': ['temperature\nmax / min', 'wind', 'weather'],
+            'date_title': title,
+            'titles': ['temperature\nmax / min', 'wind', 'weather'],
             'values': [temperature, wind, weather]
         }
 
+    print('==formed==')
     return {
-        'now': _now(forecast),
-        'today': _day(forecast, 0),
-        'tomorrow': _day(forecast, 1)
+        'now': _now(forecasts),
+        'today': _day(forecasts, 0),
+        'tomorrow': _day(forecasts, 1)
     }

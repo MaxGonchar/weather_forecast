@@ -3,32 +3,23 @@ from kivy.base import ExceptionHandler, ExceptionManager
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 
+from forecaster.config import PLUG_DATA
 from forecaster.graphic.screen import MainScreen
-from forecaster.utilites.utils import form_forecast
+from forecaster.utilites.utils import form_forecasts
 
 
 class ForecasterApp(App):
-    plug_data = {
-        'now': {
-            'title': '0',
-            'names': ['0', '0', '0'],
-            'values': ['0', '0', '0']
-        },
-        'today': {
-            'title': '0',
-            'names': ['0', '0', '0'],
-            'values': ['0', '0', '0']
-        },
-        'tomorrow': {
-            'title': '0',
-            'names': ['0', '0', '0'],
-            'values': ['0', '0', '0']
-        },
-    }
+    plug_data = PLUG_DATA
+
+    def __init__(self, **kwargs):
+        super(ForecasterApp, self).__init__(**kwargs)
+        self.main_screen = MainScreen(self.plug_data)
 
     def build(self):
-        data = form_forecast()
-        return MainScreen(data)
+        return self.main_screen
+
+    def on_start(self):
+        self.main_screen.update_text(form_forecasts())
 
 
 class Error(Exception, ExceptionHandler):
